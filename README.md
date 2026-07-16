@@ -41,7 +41,10 @@ int main(void) {
     MX_USART2_UART_Init(); // Required if printf is retargeted here
 
     // Initialize MPU6050: Gyro Mode 0 (±250°/s), Accel Mode 0 (±2g)
-    MPU6050_Init(&hi2c1, 0, 0);
+    if (MPU6050_Init(&hi2c1, 0, 0) != 0) {
+        // Handle initialization failure
+        Error_Handler(); 
+    }
 
     while (1) {
         // Read data and calculate Roll (Position)
