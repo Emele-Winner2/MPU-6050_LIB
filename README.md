@@ -1,4 +1,4 @@
----
+
 
 # MPU6050 STM32 HAL Driver
 
@@ -75,4 +75,3 @@ Reads all 14 registers (Accel, Temp, Gyro) in a single burst for efficiency. Cal
 * **`raw_data`**: An array of 14 bytes to store the raw register values.
 * **`GYRO_MODE`**: Must match the mode used during initialization to ensure accurate degrees-per-second conversion.
 
----
