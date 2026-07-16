@@ -1,7 +1,3 @@
-Here is a complete, structured README you can drop directly into your project. I’ve included all standard sections like requirements, usage, and function descriptions.
-
-At the bottom, I've also added a couple of quick C/math tips based on the code you shared to help your complementary filter run perfectly.
-
 ---
 
 # MPU6050 STM32 HAL Driver
@@ -45,10 +41,7 @@ int main(void) {
     MX_USART2_UART_Init(); // Required if printf is retargeted here
 
     // Initialize MPU6050: Gyro Mode 0 (±250°/s), Accel Mode 0 (±2g)
-    if (MPU6050_Init(&hi2c1, 0, 0) != 0) {
-        // Handle initialization failure
-        Error_Handler(); 
-    }
+    MPU6050_Init(&hi2c1, 0, 0)
 
     while (1) {
         // Read data and calculate Roll (Position)
