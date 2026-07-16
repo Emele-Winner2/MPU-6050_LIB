@@ -1,65 +1,54 @@
+# MPU6050 STM32 HAL Driver
+
+A lightweight, easy-to-use C library for interfacing the MPU6050 6-axis Accelerometer and Gyroscope with STM32 microcontrollers. It uses the STM32 Hardware Abstraction Layer (HAL) for I2C communication and features a built-in complementary filter for calculating stable roll angles.
+
+## Features
+
+* **I2C Communication:** Reads and writes to the MPU6050 using standard STM32 HAL I2C functions.
+* **Configurable Ranges:** Support for adjusting the full-scale range of both the Gyroscope and Accelerometer.
+* **Sensor Fusion:** Utilizes a complementary filter (default $\alpha = 0.98$) to combine gyroscope and accelerometer data into a clean, drift-free positional angle (Roll).
+
+## Requirements
+
+To use this library, your STM32 project must have the following configured:
+
+1. **STM32 HAL Library:** Ensure `<main.h>` is included and the HAL drivers are linked.
+2. **I2C Peripheral Enabled:** Configure an I2C bus (e.g., `I2C1`) in STM32CubeMX with standard mode (100kHz) or fast mode (400kHz).
+3. **Floating-Point Unit (Optional but recommended):** Hardware FPU is recommended due to the use of `atan2f` and floating-point math in the complementary filter.
+4. **`printf` Retargeting:** The library uses `printf` for debugging and output. You must redirect `printf` to a UART port (e.g., overriding `_write` in `syscalls.c`) to see the initialization status and angle outputs.
+
+## Installation
+
+1. Include `MPU_6050.h` in your `Core/Inc` directory.
+2. Include the source code in your `Core/Src` directory.
+3. Make sure `#include "MPU_6050.h"` is added to your `main.c` file.
+
+## Usage Example
+
+```c
+#include "main.h"
 #include "MPU_6050.h"
 
-void MPU6050_Init(I2C_HandleTypeDef *hi2c, uint8_t GYRO_MODE, uint8_t ACCEL_MODE)
-{
-	uint8_t buffer;
-	uint8_t clear = 0;
-	HAL_I2C_Mem_Read(hi2c, MPU_ADDR, WHO_AM_I, 1, &buffer, 1, HAL_MAX_DELAY); // Read from the WHO_AM_I Register...
-	if (buffer == 0x70 || buffer == 0x68)
-	{
-		printf("0x%0x The Device is working properly...\n", buffer);
-		printf("Powering on.....\n");
-		HAL_I2C_Mem_Write(hi2c, MPU_ADDR, WAKE, 1, &clear, 1, HAL_MAX_DELAY);
-	}
-	else
-	{
-		printf("The Device is not Working Properly.....\n");
-		return 1;
-	}
-	GYRO_MODE = GYRO_MODE << 3;
-	ACCEL_MODE = ACCEL_MODE << 3;
-	HAL_I2C_Mem_Write(hi2c, MPU_ADDR, GYRO_CONFIG, 1, &GYRO_MODE, 1, HAL_MAX_DELAY); // Gyroscope Configuration...
-	printf("The Gyroscope is in mode %d.....\n", GYRO_MODE);
+extern I2C_HandleTypeDef hi2c1; // Your configured I2C handle
+uint8_t mpu_raw_data[14];
 
-	HAL_I2C_Mem_Write(hi2c, MPU_ADDR, ACCEL_CONFIG, 1, &ACCEL_MODE, 1, HAL_MAX_DELAY); // Accelerometer Configuration...
-	printf("The Accelerometer is in mode %d.....\n", ACCEL_MODE);
-}
-void MPU_6050_POSITION(I2C_HandleTypeDef *hi2c, uint8_t raw_data[14], uint8_t GYRO_MODE)
-{
-	uint32_t initial = HAL_GetTick();
-	float tilt; // I meant Roll
-	HAL_I2C_Mem_Read(hi2c, MPU_ADDR, READINGS, 1, raw_data, 14, HAL_MAX_DELAY);
-	// Extracting the Gyroscope and Accelerometer readings....
-	int16_t accel_x = (int16_t)(raw_data[0] << 8 | raw_data[1]);
-	int16_t accel_y = (int16_t)(raw_data[2] << 8 | raw_data[3]);
-	int16_t accel_z = (int16_t)(raw_data[4] << 8 | raw_data[5]);
+int main(void) {
+    HAL_Init();
+    SystemClock_Config();
+    MX_I2C1_Init();
+    MX_USART2_UART_Init(); // Required if printf is retargeted here
 
-	int16_t gyro_x = (int16_t)(raw_data[8] << 8 | raw_data[9]);
-	int16_t gyro_y = (int16_t)(raw_data[10] << 8 | raw_data[11]);
-	int16_t gyro_z = (int16_t)(raw_data[12] << 8 | raw_data[13]);
-	// Convert the gyro to degrees per second value
-	switch (GYRO_MODE)
-	{
-	case 0:
-		tilt = gyro_x / 131.0;
-		break;
-	case 1:
-		tilt = gyro_x / 65.5;
-		break;
-	case 2:
-		tilt = gyro_x / 32.8;
-		break;
-	case 3:
-		tilt = gyro_x / 16.4;
-		break;
-	default:
-		break;
-	}
-	float ACC_angle = atan2f(accel_y, accel_z) * (180 / M_PI);
-	uint32_t final = HAL_GetTick();
-	float dt = (float)(final - initial) / 1000;
-	initial = HAL_GetTick();
-	static float Position = 0.0f;
-	Position = ALPHA * (Position + tilt * dt) + (1 - ALPHA) * ACC_angle;
-	printf("Position is:%.2f\n", Position);
+    // Initialize MPU6050: Gyro Mode 0 (±250°/s), Accel Mode 0 (±2g)
+    if (MPU6050_Init(&hi2c1, 0, 0) != 0) {
+        // Handle initialization failure
+        Error_Handler(); 
+    }
+
+    while (1) {
+        // Read data and calculate Roll (Position)
+        MPU_6050_POSITION(&hi2c1, mpu_raw_data, 0);
+        
+        // Loop delay dictates your sampling rate
+        HAL_Delay(10); 
+    }
 }
