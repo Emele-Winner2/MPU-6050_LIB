@@ -41,10 +41,7 @@ int main(void) {
     MX_USART2_UART_Init(); // Required if printf is retargeted here
 
     // Initialize MPU6050: Gyro Mode 0 (±250°/s), Accel Mode 0 (±2g)
-    if (MPU6050_Init(&hi2c1, 0, 0) != 0) {
-        // Handle initialization failure
-        Error_Handler(); 
-    }
+    MPU6050_Init(&hi2c1, 0, 0) != 0)
 
     while (1) {
         // Read data and calculate Roll (Position)
@@ -59,7 +56,7 @@ int main(void) {
 
 ## Function Reference
 
-### `uint8_t MPU6050_Init(I2C_HandleTypeDef *hi2c, uint8_t GYRO_MODE, uint8_t ACCEL_MODE)`
+### `void MPU6050_Init(I2C_HandleTypeDef *hi2c, uint8_t GYRO_MODE, uint8_t ACCEL_MODE)`
 
 Verifies connection to the sensor via the `WHO_AM_I` register, brings the device out of sleep mode, and sets the scaling modes.
 
@@ -67,7 +64,7 @@ Verifies connection to the sensor via the `WHO_AM_I` register, brings the device
 * **`GYRO_MODE`**: `0` (±250°/s), `1` (±500°/s), `2` (±1000°/s), or `3` (±2000°/s).
 * **`ACCEL_MODE`**: `0` (±2g), `1` (±4g), `2` (±8g), or `3` (±16g).
 
-### `uint8_t MPU_6050_POSITION(I2C_HandleTypeDef *hi2c, uint8_t raw_data[14], uint8_t GYRO_MODE)`
+### `void MPU_6050_POSITION(I2C_HandleTypeDef *hi2c, uint8_t raw_data[14], uint8_t GYRO_MODE)`
 
 Reads all 14 registers (Accel, Temp, Gyro) in a single burst for efficiency. Calculates the Roll angle using a complementary filter and prints it to the console.
 
