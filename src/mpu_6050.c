@@ -24,6 +24,7 @@ void MPU6050_Init(I2C_HandleTypeDef *hi2c, uint8_t GYRO_MODE, uint8_t ACCEL_MODE
 	HAL_I2C_Mem_Write(hi2c, MPU_ADDR, ACCEL_CONFIG, 1, &ACCEL_MODE, 1, HAL_MAX_DELAY); // Accelerometer Configuration...
 	printf("The Accelerometer is in mode %d.....\n", ACCEL_MODE);
 }
+
 void MPU_6050_POSITION(I2C_HandleTypeDef *hi2c, uint8_t raw_data[14], uint8_t GYRO_MODE)
 {
 	uint32_t initial = HAL_GetTick();
