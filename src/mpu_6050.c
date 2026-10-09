@@ -13,7 +13,7 @@ void MPU6050_Init(I2C_HandleTypeDef *hi2c, uint8_t GYRO_MODE, uint8_t ACCEL_MODE
 	else
 	{
 		printf("The Device is not Working Properly.....\n");
-		return 1;
+		return;
 	}
 	GYRO_MODE = GYRO_MODE << 3;
 	ACCEL_MODE = ACCEL_MODE << 3;
@@ -62,9 +62,16 @@ void MPU_6050_POSITION(I2C_HandleTypeDef *hi2c, uint8_t raw_data[14], uint8_t GY
 	}
 	float ACC_angle = atan2f(accel_y, accel_z) * (180 / M_PI);
 	float ACC_pitch = atan2f(-accel_x, sqrtf(accel_y * accel_y + accel_z * accel_z)) * (180 / M_PI);
-	uint32_t final = HAL_GetTick();
-	float dt = (float)(final - initial) / 1000;
-	initial = HAL_GetTick();
+	static uint32_t last_time = 0;
+	uint32_t now = HAL_GetTick();
+
+	if (last_time == 0) {
+	    last_time = now;
+	    return; // Skip first frame to avoid large initial dt jump
+	}
+
+	float dt = (float)(now - last_time) / 1000.0f;
+	last_time = now;
 	static float Position = 0.0f;
 	static float PositionY = 0.0f;
 	Position = ALPHA * (Position + tilt * dt) + (1 - ALPHA) * ACC_angle;
