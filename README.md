@@ -1,14 +1,12 @@
-
-
 # MPU6050 STM32 HAL Driver
 
 A lightweight, easy-to-use C library for interfacing the MPU6050 6-axis Accelerometer and Gyroscope with STM32 microcontrollers. It uses the STM32 Hardware Abstraction Layer (HAL) for I2C communication and features a built-in complementary filter for calculating stable roll angles.
 
 ## Features
 
-* **I2C Communication:** Reads and writes to the MPU6050 using standard STM32 HAL I2C functions.
-* **Configurable Ranges:** Support for adjusting the full-scale range of both the Gyroscope and Accelerometer.
-* **Sensor Fusion:** Utilizes a complementary filter (default $\alpha = 0.98$) to combine gyroscope and accelerometer data into a clean, drift-free positional angle (Roll).
+- **I2C Communication:** Reads and writes to the MPU6050 using standard STM32 HAL I2C functions.
+- **Configurable Ranges:** Support for adjusting the full-scale range of both the Gyroscope and Accelerometer.
+- **Sensor Fusion:** Utilizes a complementary filter (default $\alpha = 0.98$) to combine gyroscope and accelerometer data into a clean, drift-free positional angle (Roll).
 
 ## Requirements
 
@@ -46,9 +44,9 @@ int main(void) {
     while (1) {
         // Read data and calculate Roll (Position)
         MPU_6050_POSITION(&hi2c1, mpu_raw_data, 0);
-        
+
         // Loop delay dictates your sampling rate
-        HAL_Delay(10); 
+        HAL_Delay(10);
     }
 }
 
@@ -60,15 +58,14 @@ int main(void) {
 
 Verifies connection to the sensor via the `WHO_AM_I` register, brings the device out of sleep mode, and sets the scaling modes.
 
-* **`hi2c`**: Pointer to the I2C handle.
-* **`GYRO_MODE`**: `0` (±250°/s), `1` (±500°/s), `2` (±1000°/s), or `3` (±2000°/s).
-* **`ACCEL_MODE`**: `0` (±2g), `1` (±4g), `2` (±8g), or `3` (±16g).
+- **`hi2c`**: Pointer to the I2C handle.
+- **`GYRO_MODE`**: `0` (±250°/s), `1` (±500°/s), `2` (±1000°/s), or `3` (±2000°/s).
+- **`ACCEL_MODE`**: `0` (±2g), `1` (±4g), `2` (±8g), or `3` (±16g).
 
 ### `void MPU_6050_POSITION(I2C_HandleTypeDef *hi2c, uint8_t raw_data[14], uint8_t GYRO_MODE)`
 
 Reads all 14 registers (Accel, Temp, Gyro) in a single burst for efficiency. Calculates the Roll angle using a complementary filter and prints it to the console.
 
-* **`hi2c`**: Pointer to the I2C handle.
-* **`raw_data`**: An array of 14 bytes to store the raw register values.
-* **`GYRO_MODE`**: Must match the mode used during initialization to ensure accurate degrees-per-second conversion.
-
+- **`hi2c`**: Pointer to the I2C handle.
+- **`raw_data`**: An array of 14 bytes to store the raw register values.
+- **`GYRO_MODE`**: Must match the mode used during initialization to ensure accurate degrees-per-second conversion.
